@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab Titrasi Asam-Basa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#090d14;color:#c9d1d9;font-family:'Space Grotesk',sans-serif;min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:20px}
+.container{width:100%;max-width:900px}
+.mono{font-family:'JetBrains Mono',monospace}
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #21262d}
+.game-title{font-size:19px;font-weight:600;color:#58a6ff;letter-spacing:.5px}
+.badges{display:flex;gap:8px;flex-wrap:wrap}
+.badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;font-family:'JetBrains Mono',monospace}
+.b-blue{background:#1c2d47;color:#58a6ff;border:1px solid #1f6feb}
+.b-green{background:#0d2918;color:#3fb950;border:1px solid #238636}
+.b-amber{background:#2d1f03;color:#d29922;border:1px solid #9e6a03}
+.b-red{background:#2d0f0f;color:#f85149;border:1px solid #da3633}
+.step-indicator{display:flex;gap:0;margin-bottom:14px;border-radius:8px;overflow:hidden;border:1px solid #21262d}
+.step-item{flex:1;padding:7px 6px;text-align:center;font-size:11px;font-weight:500;color:#484f58;cursor:default;border-right:1px solid #21262d;transition:all .2s}
+.step-item:last-child{border-right:none}
+.step-item.active{background:#1c2d47;color:#58a6ff}
+.step-item.done{background:#0d2918;color:#3fb950}
+.phase{display:none}
+.phase.visible{display:block}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.card{background:#161b22;border:1px solid #21262d;border-radius:8px;padding:12px}
+.card-title{font-size:11px;color:#8b949e;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.soal-card{background:#0d1117;border:1px solid #1f6feb;border-radius:8px;padding:14px;margin-bottom:12px}
+.soal-num{font-size:11px;color:#58a6ff;margin-bottom:4px}
+.soal-text{font-size:14px;color:#e6edf3;font-weight:500;line-height:1.5;white-space:pre-line}
+.soal-sub{font-size:12px;color:#8b949e;margin-top:4px}
+.reagen-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:12px}
+.reagen-btn{padding:10px 8px;border-radius:8px;border:1px solid #30363d;background:#0d1117;color:#c9d1d9;font-size:12px;font-weight:500;cursor:pointer;text-align:center;transition:all .2s;line-height:1.4}
+.reagen-btn:hover{border-color:#58a6ff;color:#58a6ff;background:#1c2d47}
+.reagen-btn.selected{border-color:#3fb950;background:#0d2918;color:#3fb950}
+.reagen-btn .formula{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;display:block}
+.reagen-btn .conc{font-size:10px;color:#8b949e;display:block;margin-top:2px}
+.ind-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-bottom:12px}
+.ind-btn{padding:10px;border-radius:8px;border:1px solid #30363d;background:#0d1117;color:#c9d1d9;font-size:12px;cursor:pointer;text-align:left;transition:all .2s;display:flex;align-items:center;gap:8px}
+.ind-btn:hover{border-color:#58a6ff}
+.ind-btn.selected{border-color:#3fb950;background:#0d2918}
+.ind-dot-big{width:18px;height:18px;border-radius:50%;flex-shrink:0;border:1px solid rgba(255,255,255,.1)}
+.ind-name{font-size:12px;font-weight:500;color:#e6edf3}
+.ind-range{font-size:10px;color:#8b949e}
+.ind-colors{font-size:10px;color:#484f58;margin-top:2px}
+.action-btn{padding:9px 18px;border-radius:7px;border:none;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;font-family:'Space Grotesk',sans-serif}
+.btn-primary{background:#238636;color:#fff}
+.btn-primary:hover{background:#2ea043}
+.btn-primary:active{transform:scale(.97)}
+.btn-secondary{background:#21262d;color:#c9d1d9;border:1px solid #30363d}
+.btn-secondary:hover{background:#30363d}
+.btn-warn{background:#9e6a03;color:#fff}
+.btn-warn:hover{background:#b3760a}
+.btn-danger{background:#da3633;color:#fff}
+.lab-layout{display:grid;grid-template-columns:175px 1fr 175px;gap:12px;align-items:start}
+.apparatus-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0}
+.burette-wrap{display:flex;flex-direction:column;align-items:center}
+.bur-tube{width:26px;height:110px;border:1.5px solid #4a8abf;border-radius:3px;overflow:hidden;background:#0a0e13;position:relative}
+.bur-fill{position:absolute;bottom:0;left:0;right:0;transition:height .7s ease}
+.bur-tip{width:4px;height:14px;background:#4a8abf;border-radius:0 0 2px 2px;margin:0 auto}
+.bur-label{font-size:10px;color:#484f58;margin-top:2px;text-align:center}
+.bur-scale{font-size:9px;color:#30363d;text-align:right;line-height:2.2;margin-left:2px}
+.flask-svg{overflow:visible}
+.drop-anim{position:relative;height:22px;display:flex;justify-content:center}
+.drop-el{width:5px;height:7px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;opacity:0}
+.drop-el.fall{animation:dropfall .55s ease-in forwards}
+@keyframes dropfall{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(70px)}}
+.ph-number{font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:600;text-align:center;transition:color .4s}
+.ph-bar-wrap{position:relative;margin:6px 0}
+.ph-bar{height:6px;border-radius:3px;background:linear-gradient(to right,#e53935,#fb8c00,#fdd835,#43a047,#039be5,#1e88e5,#5e35b1)}
+.ph-needle{position:absolute;top:-5px;width:3px;height:16px;background:#fff;border-radius:2px;transition:left .5s}
+.ph-labels{display:flex;justify-content:space-between;font-size:9px;color:#484f58}
+.curve-canvas-wrap{position:relative;height:160px;margin:8px 0}
+.vol-controls{display:flex;flex-direction:column;gap:6px}
+.vol-btns{display:flex;gap:6px;flex-wrap:wrap}
+.vol-btn{flex:1;min-width:50px;padding:7px 4px;border-radius:6px;border:1px solid #1f6feb;background:#1c2d47;color:#58a6ff;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center;font-family:'Space Grotesk',sans-serif}
+.vol-btn:hover{background:#233a5e}
+.vol-btn:active{transform:scale(.96)}
+.result-box{border-radius:8px;padding:12px 14px;margin-top:10px;font-size:13px;font-weight:500;display:none}
+.result-box.show{display:block}
+.result-success{background:#0d2918;border:1px solid #238636;color:#3fb950}
+.result-close{background:#2d1f03;border:1px solid #9e6a03;color:#d29922}
+.result-fail{background:#2d0f0f;border:1px solid #da3633;color:#f85149}
+.log-box{max-height:110px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#30363d #0d1117}
+.log-row{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid #161b22;color:#484f58}
+.log-row.new{color:#8b949e}
+.tip-box{background:#0d1117;border-left:3px solid #58a6ff;border-radius:0 6px 6px 0;padding:8px 10px;font-size:12px;color:#8b949e;margin:8px 0;line-height:1.5}
+.tip-box strong{color:#58a6ff}
+.color-swatch{width:100%;height:32px;border-radius:6px;border:1px solid #30363d;transition:background .6s;margin:6px 0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:10px 0}
+.sum-card{background:#161b22;border:1px solid #21262d;border-radius:8px;padding:10px;text-align:center}
+.sum-num{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:600;color:#58a6ff}
+.sum-label{font-size:11px;color:#8b949e;margin-top:2px}
+.reaction-eq{background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:8px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#e6edf3;margin:6px 0;text-align:center}
+.info-row2{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid #161b22}
+.il{color:#8b949e}
+.iv{color:#e6edf3;font-weight:500}
+.iv.green{color:#3fb950}
+.iv.amber{color:#d29922}
+.iv.red{color:#f85149}
+.iv.blue{color:#58a6ff}
+input[type=range]{width:100%;accent-color:#58a6ff}
+@media(max-width:680px){
+  .lab-layout{grid-template-columns:1fr}
+  .step-item{font-size:9px;padding:5px 3px}
+  body{padding:10px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="top-bar">
+  <div class="game-title">⚗ Lab Titrasi Asam-Basa</div>
+  <div class="badges">
+    <span class="badge b-blue" id="b-skor">Skor: 0</span>
+    <span class="badge b-amber" id="b-level">Level 1/10</span>
+    <span class="badge b-red" id="b-nyawa">♥ 3</span>
+  </div>
+</div>
+
+<div class="step-indicator">
+  <div class="step-item active" id="s0">1. Siapkan Larutan</div>
+  <div class="step-item" id="s1">2. Isi Buret</div>
+  <div class="step-item" id="s2">3. Pilih Indikator</div>
+  <div class="step-item" id="s3">4. Titrasi</div>
+  <div class="step-item" id="s4">5. Hasil</div>
+</div>
+
+<!-- PHASE 0: Pilih Analit -->
+<div class="phase visible" id="phase0">
+  <div class="soal-card">
+    <div class="soal-num" id="soal-num">Soal 1 dari 10</div>
+    <div class="soal-text" id="soal-text">Loading...</div>
+    <div class="soal-sub" id="soal-sub"></div>
+  </div>
+  <div class="card" style="margin-bottom:10px">
+    <div class="card-title">🧪 Pilih larutan analit (dalam erlenmeyer)</div>
+    <div class="reagen-grid" id="analit-grid"></div>
+    <div class="tip-box" id="analit-tip">Pilih larutan yang sesuai dengan soal di atas.</div>
+  </div>
+  <div style="display:flex;gap:8px;justify-content:flex-end">
+    <button class="action-btn btn-primary" onclick="goStep(1)">Lanjut: Isi Buret →</button>
+  </div>
+</div>
+
+<!-- PHASE 1: Pilih Titran -->
+<div class="phase" id="phase1">
+  <div class="soal-card">
+    <div class="soal-num">Tahap 2: Isi Buret dengan Titran</div>
+    <div class="soal-text" id="titran-hint">Pilih titran yang sesuai.</div>
+  </div>
+  <div class="card" style="margin-bottom:10px">
+    <div class="card-title">🔬 Pilih titran untuk buret</div>
+    <div class="reagen-grid" id="titran-grid"></div>
+    <div class="tip-box" id="titran-tip">Titran harus dapat bereaksi dengan analit.</div>
+  </div>
+  <div style="display:flex;gap:8px;justify-content:flex-end">
+    <button class="action-btn btn-secondary" onclick="goStep(0)">← Kembali</button>
+    <button class="action-btn btn-primary" onclick="goStep(2)">Lanjut: Pilih Indikator →</button>
+  </div>
+</div>
+
+<!-- PHASE 2: Pilih Indikator -->
+<div class="phase" id="phase2">
+  <div class="soal-card">
+    <div class="soal-num">Tahap 3: Pilih Indikator</div>
+    <div class="soal-text">Pilih indikator yang tepat berdasarkan pH titik ekuivalen reaksi ini.</div>
+  </div>
+  <div class="card" style="margin-bottom:10px">
+    <div class="card-title">💧 Pilih indikator</div>
+    <div class="ind-grid" id="ind-grid"></div>
+    <div class="tip-box" id="ind-tip">Indikator yang baik harus berubah warna tepat di sekitar pH titik ekuivalen.</div>
+  </div>
+  <div style="display:flex;gap:8px;justify-content:flex-end">
+    <button class="action-btn btn-secondary" onclick="goStep(1)">← Kembali</button>
+    <button class="action-btn btn-primary" onclick="goStep(3)">Mulai Titrasi →</button>
+  </div>
+</div>
+
+<!-- PHASE 3: Titrasi -->
+<div class="phase" id="phase3">
+  <div class="lab-layout">
+
+    <div class="card" style="padding:10px">
+      <div class="card-title" style="font-size:10px">Buret & Erlenmeyer</div>
+      <div class="apparatus-wrap">
+        <div style="display:flex;align-items:flex-start;gap:2px">
+          <div class="bur-scale">0<br>10<br>20<br>30<br>40<br>50</div>
+          <div class="burette-wrap">
+            <div class="bur-tube">
+              <div class="bur-fill" id="bur-fill" style="height:100%"></div>
+            </div>
+            <div class="bur-tip"></div>
+          </div>
+        </div>
+        <div class="bur-label" id="bur-titran-name">NaOH</div>
+        <div class="bur-label" style="color:#58a6ff" id="bur-vol-label">50.0 mL</div>
+        <div class="drop-anim" style="margin-top:4px">
+          <div class="drop-el" id="drop-el"></div>
+        </div>
+        <div style="margin-top:4px;display:flex;flex-direction:column;align-items:center">
+          <svg class="flask-svg" width="90" height="85" viewBox="0 0 90 85">
+            <defs><clipPath id="fc"><polygon points="28,4 62,4 62,30 85,81 5,81"/></clipPath></defs>
+            <polygon points="28,4 62,4 62,30 85,81 5,81" fill="#0a0e13" stroke="#4a8abf" stroke-width="1.5"/>
+            <rect id="fl-liq" x="5" y="50" width="80" height="31" clip-path="url(#fc)" fill="rgba(200,80,80,0.5)"/>
+            <polygon points="28,4 62,4 62,30 85,81 5,81" fill="none" stroke="rgba(74,138,191,0.2)" stroke-width="6"/>
+          </svg>
+          <div style="font-size:9px;color:#484f58;text-align:center;margin-top:2px" id="flask-analit-name">HCl</div>
+        </div>
+        <div class="color-swatch" id="color-swatch">Tidak berwarna</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div class="card-title" style="margin:0">pH Real-time</div>
+          <div class="ph-number" id="ph-big">7.00</div>
+        </div>
+        <div class="ph-bar-wrap">
+          <div class="ph-bar"></div>
+          <div class="ph-needle" id="ph-needle" style="left:50%"></div>
+        </div>
+        <div class="ph-labels"><span>0</span><span>2</span><span>4</span><span>6</span><span>7</span><span>8</span><span>10</span><span>12</span><span>14</span></div>
+      </div>
+      <div class="card" style="margin-bottom:10px">
+        <div class="card-title">Kurva Titrasi</div>
+        <div class="curve-canvas-wrap">
+          <canvas id="curveCanvas" width="380" height="155" style="width:100%;height:155px"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Tambah Titran</div>
+        <div class="vol-controls">
+          <div class="vol-btns">
+            <div class="vol-btn" onclick="addVol(.1)">+0.1</div>
+            <div class="vol-btn" onclick="addVol(.5)">+0.5</div>
+            <div class="vol-btn" onclick="addVol(1)">+1</div>
+            <div class="vol-btn" onclick="addVol(2)">+2</div>
+            <div class="vol-btn" onclick="addVol(5)">+5</div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="font-size:11px;color:#8b949e;white-space:nowrap">Custom:</span>
+            <input type="range" min="1" max="100" value="10" id="custom-slider" step="1" oninput="document.getElementById('custom-val').textContent=(this.value/10).toFixed(1)+' mL'">
+            <span style="font-size:11px;color:#58a6ff;min-width:44px" id="custom-val">1.0 mL</span>
+            <div class="vol-btn" style="min-width:auto;padding:7px 10px" onclick="addVol(parseFloat(document.getElementById('custom-slider').value)/10)">+</div>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:4px">
+            <button class="action-btn btn-warn" onclick="markEq()" style="flex:1;font-size:12px">✓ Tandai Titik Ekuivalen</button>
+            <button class="action-btn btn-secondary" onclick="resetTitration()" style="font-size:12px;padding:9px 12px">↺ Reset</button>
+          </div>
+        </div>
+        <div class="result-box" id="result-box"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:10px">
+        <div class="card-title">Info Reaksi</div>
+        <div class="info-row2"><span class="il">Analit</span><span class="iv blue" id="info-analit">-</span></div>
+        <div class="info-row2"><span class="il">Titran</span><span class="iv blue" id="info-titran">-</span></div>
+        <div class="info-row2"><span class="il">Indikator</span><span class="iv" id="info-ind">-</span></div>
+        <div class="info-row2"><span class="il">Vol. analit</span><span class="iv" id="info-va">25 mL</span></div>
+        <div class="info-row2"><span class="il">Vol. ditambah</span><span class="iv amber" id="info-vadded">0.0 mL</span></div>
+        <div class="reaction-eq" id="react-eq">?</div>
+      </div>
+      <div class="card" style="margin-bottom:10px">
+        <div class="card-title">Log Titrasi</div>
+        <div class="log-box" id="log-box">
+          <div class="log-row new"><span>Start</span><span>pH: –</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Indikator Visual</div>
+        <div class="info-row2"><span class="il">Nama</span><span class="iv" id="ind-vis-name">-</span></div>
+        <div class="info-row2"><span class="il">Rentang pH</span><span class="iv" id="ind-vis-range">-</span></div>
+        <div style="margin-top:6px;font-size:11px;color:#8b949e">Warna sekarang:</div>
+        <div class="color-swatch" id="ind-vis-swatch" style="height:28px;font-size:12px">-</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PHASE 4: Hasil -->
+<div class="phase" id="phase4">
+  <div class="soal-card" id="result-soal" style="border-color:#238636">
+    <div class="soal-num" id="res-title">Hasil</div>
+    <div class="soal-text" id="res-text">-</div>
+  </div>
+  <div class="summary-grid">
+    <div class="sum-card"><div class="sum-num" id="res-score">0</div><div class="sum-label">Poin level ini</div></div>
+    <div class="sum-card"><div class="sum-num" id="res-vol">0</div><div class="sum-label">Vol. kamu (mL)</div></div>
+    <div class="sum-card"><div class="sum-num" id="res-teori">0</div><div class="sum-label">Vol. teoritis (mL)</div></div>
+    <div class="sum-card"><div class="sum-num" id="res-ind">–</div><div class="sum-label">Indikator</div></div>
+  </div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">Penjelasan Reaksi</div>
+    <div class="reaction-eq" id="res-eq-full">-</div>
+    <div class="tip-box" id="res-explanation" style="margin-top:8px">-</div>
+  </div>
+  <div style="display:flex;gap:8px;justify-content:center">
+    <button class="action-btn btn-primary" onclick="nextLevel()">Level Berikutnya →</button>
+    <button class="action-btn btn-secondary" onclick="retryLevel()">↺ Ulangi Level Ini</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+const REAGEN = {
+  acids: [
+    {id:'HCl',label:'HCl',conc:0.1,type:'strong_acid',ka:null},
+    {id:'H2SO4',label:'H₂SO₄',conc:0.05,type:'strong_acid',ka:null,diprotic:true},
+    {id:'CH3COOH',label:'CH₃COOH',conc:0.1,type:'weak_acid',ka:1.8e-5,pka:4.74},
+    {id:'H3PO4',label:'H₃PO₄',conc:0.1,type:'weak_acid',ka:7.5e-3,pka:2.12},
+    {id:'HF',label:'HF',conc:0.1,type:'weak_acid',ka:6.8e-4,pka:3.17},
+    {id:'HNO2',label:'HNO₂',conc:0.1,type:'weak_acid',ka:4.5e-4,pka:3.35},
+  ],
+  bases: [
+    {id:'NaOH',label:'NaOH',conc:0.1,type:'strong_base'},
+    {id:'KOH',label:'KOH',conc:0.1,type:'strong_base'},
+    {id:'Ca(OH)2',label:'Ca(OH)₂',conc:0.05,type:'strong_base',diprotic:true},
+    {id:'NH3',label:'NH₃',conc:0.1,type:'weak_base',kb:1.8e-5,pkb:4.74},
+    {id:'Na2CO3',label:'Na₂CO₃',conc:0.1,type:'weak_base',kb:2.1e-4},
+    {id:'C5H5N',label:'Piridin',conc:0.1,type:'weak_base',kb:1.7e-9},
+  ]
+};
+
+const INDICATORS = [
+  {id:'metil_ungu',name:'Metil Ungu',range:[0.0,1.6],acidColor:'#ffd700',baseColor:'#9c27b0',acidLabel:'Kuning',baseLabel:'Ungu',midLabel:'Hijau'},
+  {id:'metil_jingga',name:'Metil Jingga',range:[3.1,4.4],acidColor:'#f44336',baseColor:'#ffeb3b',acidLabel:'Merah',baseLabel:'Kuning',midLabel:'Jingga'},
+  {id:'metil_merah',name:'Metil Merah',range:[4.4,6.2],acidColor:'#f44336',baseColor:'#ffd700',acidLabel:'Merah',baseLabel:'Kuning',midLabel:'Jingga'},
+  {id:'lakmus',name:'Lakmus',range:[5.0,8.0],acidColor:'#f44336',baseColor:'#2196f3',acidLabel:'Merah',baseLabel:'Biru',midLabel:'Ungu'},
+  {id:'bromtimol',name:'Bromtimol Biru',range:[6.0,7.6],acidColor:'#ffd700',baseColor:'#2196f3',acidLabel:'Kuning',baseLabel:'Biru',midLabel:'Hijau'},
+  {id:'fenolftalein',name:'Fenolftalein',range:[8.2,10.0],acidColor:'#f5f5f0',baseColor:'#e91e8c',acidLabel:'Tidak berwarna',baseLabel:'Merah muda',midLabel:'Merah muda pucat'},
+  {id:'alizarin',name:'Alizarin Kuning',range:[10.1,12.0],acidColor:'#ffd700',baseColor:'#f44336',acidLabel:'Kuning',baseLabel:'Merah',midLabel:'Jingga'},
+  {id:'thymolftalein',name:'Timolftalein',range:[9.3,10.5],acidColor:'#f5f5f0',baseColor:'#2196f3',acidLabel:'Tidak berwarna',baseLabel:'Biru',midLabel:'Biru pucat'},
+];
+
+const LEVELS = [
+  {q:'Sebanyak 25 mL HCl 0.1 M akan dititrasi.\nTentukan volume NaOH 0.1 M yang dibutuhkan!',sub:'Asam kuat – Basa kuat',analitId:'HCl',titranId:'NaOH',eqVol:25.0,eqPH:7.0,bestInd:'fenolftalein',reaction:'HCl + NaOH → NaCl + H₂O',explanation:'Titrasi asam kuat dengan basa kuat. pH titik ekuivalen = 7 karena garam NaCl tidak terhidrolisis. Indikator fenolftalein (pH 8.2–10) atau bromtimol biru (pH 6–7.6) sama-sama cocok.'},
+  {q:'Sebanyak 20 mL H₂SO₄ 0.05 M dititrasi dengan KOH 0.1 M.\nBerapa volume KOH yang diperlukan?',sub:'Asam kuat diprotik – Basa kuat',analitId:'H2SO4',titranId:'KOH',eqVol:20.0,eqPH:7.0,bestInd:'bromtimol',reaction:'H₂SO₄ + 2KOH → K₂SO₄ + 2H₂O',explanation:'H₂SO₄ adalah asam diprotik — melepas 2 ion H⁺. Mol H⁺ = 2 × 0.05 × 20 = 2 mmol. Mol KOH = 0.1 × V, sehingga V = 20 mL. pH = 7.'},
+  {q:'25 mL CH₃COOH 0.1 M dititrasi dengan NaOH 0.1 M.\nTentukan titik ekuivalen dan indikator yang tepat!',sub:'Asam lemah – Basa kuat',analitId:'CH3COOH',titranId:'NaOH',eqVol:25.0,eqPH:8.87,bestInd:'fenolftalein',reaction:'CH₃COOH + NaOH → CH₃COONa + H₂O',explanation:'Titrasi asam lemah–basa kuat. pH titik ekuivalen > 7 (pH ≈ 8.87) karena CH₃COO⁻ terhidrolisis (basa konjugat). Fenolftalein (8.2–10.0) adalah pilihan terbaik. Metil merah TIDAK cocok karena berubah warna jauh sebelum ekuivalen.'},
+  {q:'20 mL NaOH 0.1 M dititrasi dengan HCl 0.1 M.\nTentukan volume HCl yang dibutuhkan!',sub:'Basa kuat – Asam kuat',analitId:'NaOH',titranId:'HCl',eqVol:20.0,eqPH:7.0,bestInd:'bromtimol',reaction:'NaOH + HCl → NaCl + H₂O',explanation:'Titrasi basa kuat dengan asam kuat. pH = 7 di titik ekuivalen. Bromtimol biru paling cocok karena rentang pH-nya (6–7.6) mencakup pH 7 dengan tepat.'},
+  {q:'25 mL NH₃ 0.1 M dititrasi dengan HCl 0.1 M.\nIndikator apa yang tepat dan berapa vol. HCl?',sub:'Basa lemah – Asam kuat',analitId:'NH3',titranId:'HCl',eqVol:25.0,eqPH:5.13,bestInd:'metil_merah',reaction:'NH₃ + HCl → NH₄Cl',explanation:'Titrasi basa lemah–asam kuat. pH ekuivalen < 7 (≈ 5.13) karena NH₄⁺ terhidrolisis (asam konjugat). Metil merah (4.4–6.2) adalah pilihan tepat. Fenolftalein TIDAK cocok!'},
+  {q:'30 mL HF 0.1 M dititrasi dengan NaOH 0.1 M.\nTentukan titik ekuivalen!',sub:'Asam lemah (HF) – Basa kuat',analitId:'HF',titranId:'NaOH',eqVol:30.0,eqPH:8.14,bestInd:'fenolftalein',reaction:'HF + NaOH → NaF + H₂O',explanation:'HF adalah asam lemah dengan Ka = 6.8×10⁻⁴. NaF di titik ekuivalen terhidrolisis membentuk larutan basa lemah (pH ≈ 8.1). Fenolftalein cocok karena mulai berubah warna di pH 8.2.'},
+  {q:'20 mL HNO₂ 0.1 M dititrasi dengan NaOH 0.1 M.\nHitung pH titik ekuivalen dan pilih indikator!',sub:'Asam lemah – Basa kuat',analitId:'HNO2',titranId:'NaOH',eqVol:20.0,eqPH:8.14,bestInd:'fenolftalein',reaction:'HNO₂ + NaOH → NaNO₂ + H₂O',explanation:'HNO₂ (asam nitrit) adalah asam lemah. NaNO₂ yang terbentuk mengalami hidrolisis basa, sehingga pH > 7. Fenolftalein adalah pilihan terbaik.'},
+  {q:'25 mL Ca(OH)₂ 0.05 M dititrasi dengan HCl 0.1 M.\nBerapa mL HCl diperlukan?',sub:'Basa kuat diprotik – Asam kuat',analitId:'Ca(OH)2',titranId:'HCl',eqVol:25.0,eqPH:7.0,bestInd:'bromtimol',reaction:'Ca(OH)₂ + 2HCl → CaCl₂ + 2H₂O',explanation:'Ca(OH)₂ adalah basa diprotik, melepas 2 OH⁻. Mol OH⁻ = 2 × 0.05 × 25 = 2.5 mmol. Mol HCl = 0.1 × V = 2.5, maka V = 25 mL. pH = 7.'},
+  {q:'20 mL Na₂CO₃ 0.1 M dititrasi dengan HCl 0.1 M.\nTitik ekuivalen pertama di mana?',sub:'Garam basa – Asam kuat',analitId:'Na2CO3',titranId:'HCl',eqVol:20.0,eqPH:8.34,bestInd:'fenolftalein',reaction:'Na₂CO₃ + HCl → NaHCO₃ + NaCl',explanation:'Titrasi tahap 1: Na₂CO₃ + HCl → NaHCO₃ + NaCl (pH ≈ 8.3). Fenolftalein cocok untuk titik ekuivalen pertama ini. Titik ekuivalen kedua (NaHCO₃ + HCl) memerlukan metil jingga.'},
+  {q:'25 mL Piridin 0.1 M dititrasi dengan HCl 0.1 M.\nPilih indikator yang tepat!',sub:'Basa lemah (Piridin) – Asam kuat',analitId:'C5H5N',titranId:'HCl',eqVol:25.0,eqPH:3.0,bestInd:'metil_jingga',reaction:'C₅H₅N + HCl → C₅H₅NH⁺Cl⁻',explanation:'Piridin adalah basa sangat lemah (Kb = 1.7×10⁻⁹). Garam piridin-HCl sangat asam di ekuivalen (pH ≈ 3). Metil jingga (3.1–4.4) paling cocok. Fenolftalein sama sekali tidak cocok!'},
+];
+
+let gs={levelIdx:0,step:0,score:0,lives:3,selAnalit:null,selTitran:null,selInd:null,volAdded:0,attempts:3,levelDone:false,curve:{vols:[],phs:[]}};
+
+function getLevel(){return LEVELS[gs.levelIdx];}
+
+function initLevel(){
+  const lv=getLevel();
+  gs.step=0;gs.volAdded=0;gs.attempts=3;gs.levelDone=false;
+  gs.selAnalit=null;gs.selTitran=null;gs.selInd=null;
+  gs.curve={vols:[],phs:[]};
+  document.getElementById('soal-num').textContent=`Soal ${gs.levelIdx+1} dari ${LEVELS.length}`;
+  document.getElementById('soal-text').textContent=lv.q;
+  document.getElementById('soal-sub').textContent=lv.sub;
+  buildAnalitGrid();buildTitranGrid();buildIndGrid();
+  document.getElementById('result-box').className='result-box';
+  document.getElementById('result-box').textContent='';
+  document.getElementById('log-box').innerHTML='<div class="log-row new"><span>Start</span><span>pH: –</span></div>';
+  updateTopBadges();showStep(0);
+}
+
+function buildAnalitGrid(){
+  const lv=getLevel();
+  const all=[...REAGEN.acids,...REAGEN.bases];
+  const grid=document.getElementById('analit-grid');
+  grid.innerHTML='';
+  all.forEach(r=>{
+    const btn=document.createElement('div');
+    btn.className='reagen-btn';
+    btn.innerHTML=`<span class="formula">${r.label}</span><span class="conc">${r.conc} M</span>`;
+    btn.onclick=()=>{
+      document.querySelectorAll('#analit-grid .reagen-btn').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');gs.selAnalit=r;
+      const ok=r.id===lv.analitId;
+      document.getElementById('analit-tip').innerHTML=ok
+        ?`<strong style="color:#3fb950">Benar!</strong> ${r.label} adalah analit yang tepat.`
+        :`<strong style="color:#d29922">Perhatikan soal kembali.</strong> Apakah ${r.label} sesuai?`;
+    };
+    if(r.id===lv.analitId)btn.style.borderColor='#1f6feb';
+    grid.appendChild(btn);
+  });
+}
+
+function buildTitranGrid(){
+  const lv=getLevel();
+  const all=[...REAGEN.acids,...REAGEN.bases];
+  const grid=document.getElementById('titran-grid');
+  grid.innerHTML='';
+  all.forEach(r=>{
+    const btn=document.createElement('div');
+    btn.className='reagen-btn';
+    btn.innerHTML=`<span class="formula">${r.label}</span><span class="conc">${r.conc} M</span>`;
+    btn.onclick=()=>{
+      document.querySelectorAll('#titran-grid .reagen-btn').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');gs.selTitran=r;
+      const ok=r.id===lv.titranId;
+      document.getElementById('titran-tip').innerHTML=ok
+        ?`<strong style="color:#3fb950">Tepat!</strong> ${r.label} akan menetralkan analitmu.`
+        :`<strong style="color:#d29922">Coba lagi.</strong> Apakah ${r.label} bisa menetralkan ${gs.selAnalit?.label||'analitmu'}?`;
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function buildIndGrid(){
+  const lv=getLevel();
+  const grid=document.getElementById('ind-grid');
+  grid.innerHTML='';
+  INDICATORS.forEach(ind=>{
+    const btn=document.createElement('div');
+    btn.className='ind-btn';
+    const dot=document.createElement('div');
+    dot.className='ind-dot-big';
+    dot.style.background=ind.acidColor;
+    const info=document.createElement('div');
+    info.innerHTML=`<div class="ind-name">${ind.name}</div><div class="ind-range">pH ${ind.range[0]}–${ind.range[1]}</div><div class="ind-colors">${ind.acidLabel} → ${ind.baseLabel}</div>`;
+    btn.appendChild(dot);btn.appendChild(info);
+    btn.onclick=()=>{
+      document.querySelectorAll('#ind-grid .ind-btn').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');gs.selInd=ind;
+      const inRange=lv.eqPH>=ind.range[0]&&lv.eqPH<=ind.range[1];
+      document.getElementById('ind-tip').innerHTML=inRange
+        ?`<strong style="color:#3fb950">Pilihan tepat!</strong> Rentang pH ${ind.name} (${ind.range[0]}–${ind.range[1]}) mencakup pH ekuivalen reaksi ini.`
+        :`<strong style="color:#d29922">Perhatikan!</strong> Rentang pH ${ind.name} (${ind.range[0]}–${ind.range[1]}) mungkin tidak mencakup titik ekuivalen dengan akurat.`;
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function goStep(n){
+  if(n===1&&!gs.selAnalit){alert('Pilih analit terlebih dahulu!');return;}
+  if(n===2&&!gs.selTitran){alert('Pilih titran terlebih dahulu!');return;}
+  if(n===3&&!gs.selInd){alert('Pilih indikator terlebih dahulu!');return;}
+  if(n===3)prepTitration();
+  showStep(n);
+}
+
+function prepTitration(){
+  const lv=getLevel();const ind=gs.selInd;
+  document.getElementById('bur-titran-name').textContent=gs.selTitran.label;
+  document.getElementById('flask-analit-name').textContent=gs.selAnalit.label;
+  document.getElementById('info-analit').textContent=gs.selAnalit.label+' '+gs.selAnalit.conc+'M';
+  document.getElementById('info-titran').textContent=gs.selTitran.label+' '+gs.selTitran.conc+'M';
+  document.getElementById('info-ind').textContent=ind.name;
+  document.getElementById('react-eq').textContent=lv.reaction;
+  document.getElementById('ind-vis-name').textContent=ind.name;
+  document.getElementById('ind-vis-range').textContent=`pH ${ind.range[0]}–${ind.range[1]}`;
+  const startPH=calcPH(0.001);
+  updatePHDisplay(startPH);
+  gs.curve.vols=[0];gs.curve.phs=[startPH];
+  gs.volAdded=0;
+  document.getElementById('info-vadded').textContent='0.0 mL';
+  drawCurve();
+}
+
+function calcPH(vol){
+  const lv=getLevel();
+  const anal=REAGEN.acids.find(r=>r.id===lv.analitId)||REAGEN.bases.find(r=>r.id===lv.analitId);
+  const titr=REAGEN.acids.find(r=>r.id===lv.titranId)||REAGEN.bases.find(r=>r.id===lv.titranId);
+  const Va=25,Ca=anal.conc,Ct=titr.conc,eqV=lv.eqVol,totalVol=Va+vol;
+  const analType=anal.type;
+  if(vol<eqV-0.005){
+    const ratio=vol/eqV;
+    if(analType==='strong_acid'){const mH=Ca*Va*(anal.diprotic?2:1)-Ct*vol;return -Math.log10(Math.max(mH/totalVol,1e-14));}
+    if(analType==='weak_acid'){if(vol<0.3)return 0.5*(anal.pka-Math.log10(Ca));const alpha=ratio/(1-ratio+1e-9);return anal.pka+Math.log10(Math.max(alpha,1e-10));}
+    if(analType==='strong_base'){const mOH=Ca*Va*(anal.diprotic?2:1)-Ct*vol;const pOH=-Math.log10(Math.max(mOH/totalVol,1e-14));return 14-pOH;}
+    if(analType==='weak_base'){if(vol<0.3){const pOH=0.5*((-Math.log10(anal.kb||1.8e-5))-Math.log10(Ca));return 14-pOH;}const beta=ratio/(1-ratio+1e-9);const pkb=-Math.log10(anal.kb||1.8e-5);const pOH=pkb+Math.log10(Math.max(beta,1e-10));return 14-pOH;}
+  }
+  if(Math.abs(vol-eqV)<0.05)return lv.eqPH;
+  const excess=vol-eqV;
+  const isAnalAcid=analType==='strong_acid'||analType==='weak_acid';
+  if(isAnalAcid){const concOH=Ct*excess/totalVol;return 14-(-Math.log10(Math.max(concOH,1e-14)));}
+  else{const concH=Ct*excess/totalVol;return -Math.log10(Math.max(concH,1e-14));}
+}
+
+function blendHex(c1,c2,t){
+  const r1=parseInt(c1.slice(1,3),16),g1=parseInt(c1.slice(3,5),16),b1=parseInt(c1.slice(5,7),16);
+  const r2=parseInt(c2.slice(1,3),16),g2=parseInt(c2.slice(3,5),16),b2=parseInt(c2.slice(5,7),16);
+  const r=Math.round(r1+(r2-r1)*t),g=Math.round(g1+(g2-g1)*t),b=Math.round(b1+(b2-b1)*t);
+  return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+
+function getFlaskColor(vol){
+  const ind=gs.selInd;if(!ind)return 'rgba(200,80,80,0.4)';
+  const ph=calcPH(Math.max(vol,0.001));
+  if(ph<ind.range[0])return ind.acidColor+'99';
+  if(ph>ind.range[1])return ind.baseColor+'99';
+  const t=(ph-ind.range[0])/(ind.range[1]-ind.range[0]);
+  return blendHex(ind.acidColor,ind.baseColor,t)+'99';
+}
+
+function getIndicatorColor(ph){
+  const ind=gs.selInd;if(!ind)return{color:'#888',label:'-'};
+  if(ph<ind.range[0])return{color:ind.acidColor,label:ind.acidLabel};
+  if(ph>ind.range[1])return{color:ind.baseColor,label:ind.baseLabel};
+  return{color:blendHex(ind.acidColor,ind.baseColor,(ph-ind.range[0])/(ind.range[1]-ind.range[0])),label:ind.midLabel};
+}
+
+function getPHColor(ph){
+  const stops=[[0,'#e53935'],[3,'#fb8c00'],[5,'#fdd835'],[7,'#66bb6a'],[9,'#26c6da'],[12,'#1e88e5'],[14,'#7e57c2']];
+  for(let i=0;i<stops.length-1;i++){
+    if(ph>=stops[i][0]&&ph<=stops[i+1][0]){
+      const t=(ph-stops[i][0])/(stops[i+1][0]-stops[i][0]);
+      return blendHex(stops[i][1],stops[i+1][1],t);
+    }
+  }
+  return '#7e57c2';
+}
+
+function isLightColor(hex){
+  if(!hex||hex.length<7)return true;
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return(r*299+g*587+b*114)/1000>128;
+}
+
+function updatePHDisplay(ph){
+  ph=Math.max(0,Math.min(14,ph));
+  const c=getPHColor(ph);
+  document.getElementById('ph-big').textContent=ph.toFixed(2);
+  document.getElementById('ph-big').style.color=c;
+  document.getElementById('ph-needle').style.left=(ph/14*100)+'%';
+  const flaskColor=getFlaskColor(gs.volAdded);
+  document.getElementById('fl-liq').style.fill=flaskColor;
+  const pct=Math.max(0,(50-gs.volAdded)/50)*100;
+  document.getElementById('bur-fill').style.height=pct+'%';
+  document.getElementById('bur-fill').style.background=gs.selTitran?.type?.includes('acid')?'rgba(255,180,100,0.6)':'rgba(100,180,255,0.6)';
+  document.getElementById('bur-vol-label').textContent=Math.max(0,50-gs.volAdded).toFixed(1)+' mL';
+  const indColor=getIndicatorColor(ph);
+  const sw=document.getElementById('color-swatch');
+  sw.style.background=indColor.color;sw.style.color=isLightColor(indColor.color)?'#333':'#fff';sw.textContent=indColor.label;
+  const vs=document.getElementById('ind-vis-swatch');
+  vs.style.background=indColor.color;vs.style.color=isLightColor(indColor.color)?'#333':'#fff';vs.textContent=indColor.label;
+}
+
+function drawCurve(){
+  const canvas=document.getElementById('curveCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  const pad={t:10,r:10,b:25,l:35};
+  const cw=W-pad.l-pad.r,ch=H-pad.t-pad.b;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#161b22';ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='#21262d';ctx.lineWidth=0.5;
+  for(let i=0;i<=7;i++){
+    const y=pad.t+ch*(1-i*2/14);
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+cw,y);ctx.stroke();
+    ctx.fillStyle='#484f58';ctx.font='9px monospace';ctx.textAlign='right';
+    ctx.fillText(i*2,pad.l-3,y+3);
+  }
+  const maxV=Math.max(50,getLevel().eqVol*1.8);
+  for(let i=0;i<=5;i++){
+    const x=pad.l+cw*(i/5);
+    ctx.beginPath();ctx.moveTo(x,pad.t);ctx.lineTo(x,pad.t+ch);ctx.stroke();
+    ctx.fillStyle='#484f58';ctx.font='9px monospace';ctx.textAlign='center';
+    ctx.fillText((maxV*i/5).toFixed(0),x,H-5);
+  }
+  ctx.strokeStyle='#1f6feb';ctx.lineWidth=0.5;ctx.setLineDash([3,3]);
+  const eqX=pad.l+cw*(getLevel().eqVol/maxV);
+  ctx.beginPath();ctx.moveTo(eqX,pad.t);ctx.lineTo(eqX,pad.t+ch);ctx.stroke();
+  ctx.setLineDash([]);
+  if(gs.curve.vols.length>1){
+    ctx.strokeStyle='#58a6ff';ctx.lineWidth=2;
+    ctx.beginPath();
+    gs.curve.vols.forEach((v,i)=>{
+      const x=pad.l+cw*(v/maxV);
+      const y=pad.t+ch*(1-Math.min(14,Math.max(0,gs.curve.phs[i]))/14);
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+  }
+  if(gs.volAdded>0){
+    const ph=calcPH(gs.volAdded);
+    const x=pad.l+cw*(gs.volAdded/maxV);
+    const y=pad.t+ch*(1-Math.min(14,Math.max(0,ph))/14);
+    ctx.fillStyle='#3fb950';ctx.beginPath();ctx.arc(x,y,4,0,2*Math.PI);ctx.fill();
+  }
+  ctx.fillStyle='#484f58';ctx.font='9px monospace';ctx.textAlign='center';
+  ctx.fillText('Vol titran (mL)',W/2,H-1);
+}
+
+function animateDrop(){
+  const drop=document.getElementById('drop-el');
+  drop.style.background=gs.selTitran?.type?.includes('acid')?'rgba(255,180,100,0.9)':'rgba(100,200,255,0.9)';
+  drop.classList.remove('fall');void drop.offsetWidth;
+  drop.style.opacity='1';drop.classList.add('fall');
+}
+
+function addLog(vol,ph){
+  const log=document.getElementById('log-box');
+  log.querySelectorAll('.log-row.new').forEach(e=>e.classList.remove('new'));
+  const row=document.createElement('div');
+  row.className='log-row new';
+  row.innerHTML=`<span>${vol.toFixed(1)} mL</span><span>pH: ${ph.toFixed(2)}</span>`;
+  log.insertBefore(row,log.firstChild);
+}
+
+function addVol(v){
+  if(gs.levelDone)return;
+  gs.volAdded=Math.min(70,+(gs.volAdded+v).toFixed(2));
+  const ph=calcPH(gs.volAdded);
+  gs.curve.vols.push(gs.volAdded);gs.curve.phs.push(ph);
+  animateDrop();updatePHDisplay(ph);addLog(gs.volAdded,ph);
+  document.getElementById('info-vadded').textContent=gs.volAdded.toFixed(1)+' mL';
+  drawCurve();
+}
+
+function markEq(){
+  if(gs.levelDone)return;
+  const lv=getLevel();
+  const diff=Math.abs(gs.volAdded-lv.eqVol);
+  gs.attempts--;
+  const indCorrect=gs.selInd?.id===lv.bestInd;
+  let pts=0,msg='',cls='';
+  if(diff<=0.5){
+    pts=60+gs.attempts*15+(indCorrect?20:0);gs.score+=pts;
+    msg=`Sempurna! Vol: ${gs.volAdded.toFixed(1)} mL (target: ${lv.eqVol} mL) +${pts} poin`;
+    cls='result-success';gs.levelDone=true;
+  }else if(diff<=2){
+    pts=30+(indCorrect?10:0);gs.score+=pts;
+    msg=`Hampir tepat! Selisih ${diff.toFixed(1)} mL dari ${lv.eqVol} mL. +${pts} poin`;
+    cls='result-close';gs.levelDone=true;
+  }else if(gs.attempts<=0){
+    gs.lives--;
+    msg=`Habis percobaan. Titik ekuivalen: ${lv.eqVol} mL. Volume kamu: ${gs.volAdded.toFixed(1)} mL`;
+    cls='result-fail';gs.levelDone=true;
+  }else{
+    msg=`Belum tepat. Selisih ${diff.toFixed(1)} mL. Sisa ${gs.attempts} percobaan.`;
+    cls='result-fail';
+  }
+  const rb=document.getElementById('result-box');
+  rb.className='result-box show '+cls;rb.textContent=msg;
+  updateTopBadges();
+  if(gs.levelDone)setTimeout(()=>showResult(pts,diff),1200);
+}
+
+function showResult(pts,diff){
+  const lv=getLevel();const indCorrect=gs.selInd?.id===lv.bestInd;
+  document.getElementById('res-title').textContent=diff<=0.5?'✓ Berhasil!':diff<=2?'~ Hampir Tepat':'✗ Belum Berhasil';
+  document.getElementById('res-text').textContent=diff<=0.5
+    ?`Luar biasa! Kamu menemukan titik ekuivalen dengan akurasi tinggi.`
+    :`Volume kamu: ${gs.volAdded.toFixed(1)} mL. Target: ${lv.eqVol} mL. Selisih: ${Math.abs(gs.volAdded-lv.eqVol).toFixed(1)} mL.`;
+  document.getElementById('res-score').textContent=pts;
+  document.getElementById('res-vol').textContent=gs.volAdded.toFixed(1);
+  document.getElementById('res-teori').textContent=lv.eqVol.toFixed(1);
+  document.getElementById('res-ind').textContent=indCorrect?'✓ Tepat':'✗ Kurang tepat';
+  document.getElementById('res-eq-full').textContent=lv.reaction;
+  document.getElementById('res-explanation').innerHTML=lv.explanation;
+  document.getElementById('result-soal').style.borderColor=diff<=0.5?'#238636':diff<=2?'#9e6a03':'#da3633';
+  showStep(4);
+}
+
+function resetTitration(){
+  gs.volAdded=0;gs.curve={vols:[],phs:[]};gs.levelDone=false;gs.attempts=3;
+  document.getElementById('result-box').className='result-box';
+  document.getElementById('log-box').innerHTML='<div class="log-row new"><span>Start</span><span>pH: –</span></div>';
+  const startPH=calcPH(0.001);
+  gs.curve.vols=[0];gs.curve.phs=[startPH];
+  updatePHDisplay(startPH);
+  document.getElementById('info-vadded').textContent='0.0 mL';
+  drawCurve();
+}
+
+function nextLevel(){
+  if(gs.levelIdx<LEVELS.length-1){gs.levelIdx++;}else{gs.levelIdx=0;gs.score=0;gs.lives=3;}
+  initLevel();
+}
+
+function retryLevel(){initLevel();}
+
+function showStep(n){
+  gs.step=n;
+  for(let i=0;i<5;i++){
+    document.getElementById('phase'+i).className='phase'+(i===n?' visible':'');
+    const s=document.getElementById('s'+i);
+    s.className='step-item'+(i===n?' active':i<n?' done':'');
+  }
+}
+
+function updateTopBadges(){
+  document.getElementById('b-skor').textContent='Skor: '+gs.score;
+  document.getElementById('b-level').textContent=`Level ${gs.levelIdx+1}/${LEVELS.length}`;
+  document.getElementById('b-nyawa').textContent='♥ '+gs.lives;
+}
+
+initLevel();
+</script>
+</body>
+</html>
